@@ -50,14 +50,14 @@ jobs:
 
             // 检查 Stable 是否已发布，若无则加入构建列表
             if (!${{ steps.has-stable.outputs.release-exists }}) {
-              versions.push(stable);
+              versions.push({ version: stable, channel: "Stable" });
             }
 
             // 检查 Long-term 是否已发布
             if (!${{ steps.has-longterm.outputs.release-exists }}) {
               // 关键：只有当 Long-term 和 Stable 不同时，才重复添加
               if (longterm !== stable && !versions.includes(longterm)) {
-                versions.push(longterm);
+                versions.push({ version: longterm, channel: "Long-term" });
               }
             }
             console.log(versions)
@@ -79,7 +79,7 @@ jobs:
 
     strategy:
       matrix:
-        version: ${{ fromJSON(needs.check.outputs.versions) }}
+        config: ${{ fromJSON(needs.check.outputs.versions) }}
 
     steps:
       - name: Checkout
@@ -98,7 +98,7 @@ jobs:
 
       - name: Download
         run: |
-          curl -skL --retry 3 --connect-timeout 3 -o chr.img.zip https://download.mikrotik.com/routeros/${{matrix.version}}/chr-${{matrix.version}}.img.zip
+          curl -skL --retry 3 --connect-timeout 3 -o chr.img.zip https://download.mikrotik.com/routeros/${{matrix.config.version}}/chr-${{matrix.config.version}}.img.zip
           unzip chr.*.zip
           rm -rf chr.*.zip
 
@@ -154,23 +154,29 @@ jobs:
         run: |
           mkdir -p ./Firmware/
           cp -f chr-efi.qcow2 ./Firmware/
-          qemu-img convert -f qcow2 -O vmdk chr-efi.qcow2 ./Firmware/chr-efi.vmdk
+          #qemu-img convert -f qcow2 -O vmdk chr-efi.qcow2 ./Firmware/chr-efi.vmdk
+          #qemu-img convert -f qcow2 -O vpc chr-efi.qcow2 ./Firmware/chr-efi.vhd
+          #qemu-img convert -f qcow2 -O vhdx chr-efi.qcow2 ./Firmware/chr-efi.vhdx
+          #qemu-img convert -f qcow2 -O vdi chr-efi.qcow2 ./Firmware/chr-efi.vdi
           qemu-img convert -f qcow2 -O raw chr-efi.qcow2 ./Firmware/chr-efi.img
           ls -l ./Firmware
 
       - name: Zip images
         run: |
           cd ./Firmware/
-          zip chr-${{matrix.version}}.qcow2.zip chr-efi.qcow2
-          zip chr-${{matrix.version}}.vmdk.zip chr-efi.vmdk
-          zip chr-${{matrix.version}}.img.zip chr-efi.img
+          zip chr-${{matrix.config.version}}.qcow2.zip chr-efi.qcow2
+          #zip chr-${{matrix.config.version}}.vmdk.zip chr-efi.vmdk
+          #zip chr-${{matrix.config.version}}.vhd.zip chr-efi.vhd
+          #zip chr-${{matrix.config.version}}.vhdx.zip chr-efi.vhdx
+          #zip chr-${{matrix.config.version}}.vdi.zip chr-efi.vdi
+          zip chr-${{matrix.config.version}}.img.zip chr-efi.img
           ls -l ./
 
       - name: Upload Firmware to release
         uses: ncipollo/release-action@v1
         with:
-          name: RouterOS ${{ matrix.version }} (UEFI Enabled)
-          tag: ${{ matrix.version }}
+          name: RouterOS ${{ matrix.config.version }} (${{ matrix.config.channel }})
+          tag: ${{ matrix.config.version }}
           allowUpdates: true
           removeArtifacts: true
           commit: main
@@ -178,7 +184,8 @@ jobs:
           artifacts: ./Firmware/*.zip
           body: |
             ### MikroTik RouterOS CHR (UEFI/FAT Edition)
-            - **Version**: `${{ matrix.version }}`
-            - **Format**: Includes qcow2, vmdk, img, etc.
+            - **Version**: `${{ matrix.config.version }}`
+            - **Channel**: `${{ matrix.config.channel }}`
+            - **Format**: Includes qcow2,img etc.
             - **Source**: Converted from official MikroTik RAW image.
-            - **Status**: Testing.
+            - **Status**: This image is a standard UEFI-compliant FAT32 partition, optimized for PVE hardware passthrough.
