@@ -154,10 +154,10 @@ jobs:
         run: |
           mkdir -p ./Firmware/
           cp -f chr-efi.qcow2 ./Firmware/
-          // qemu-img convert -f qcow2 -O vmdk chr-efi.qcow2 ./Firmware/chr-efi.vmdk
-          // qemu-img convert -f qcow2 -O vpc chr-efi.qcow2 ./Firmware/chr-efi.vhd
-          // qemu-img convert -f qcow2 -O vhdx chr-efi.qcow2 ./Firmware/chr-efi.vhdx
-          // qemu-img convert -f qcow2 -O vdi chr-efi.qcow2 ./Firmware/chr-efi.vdi
+          # qemu-img convert -f qcow2 -O vmdk chr-efi.qcow2 ./Firmware/chr-efi.vmdk
+          # qemu-img convert -f qcow2 -O vpc chr-efi.qcow2 ./Firmware/chr-efi.vhd
+          # qemu-img convert -f qcow2 -O vhdx chr-efi.qcow2 ./Firmware/chr-efi.vhdx
+          # qemu-img convert -f qcow2 -O vdi chr-efi.qcow2 ./Firmware/chr-efi.vdi
           qemu-img convert -f qcow2 -O raw chr-efi.qcow2 ./Firmware/chr-efi.img
           ls -l ./Firmware
 
@@ -165,10 +165,10 @@ jobs:
         run: |
           cd ./Firmware/
           zip chr-${{matrix.config.version}}.qcow2.zip chr-efi.qcow2
-          // zip chr-${{matrix.config.version}}.vmdk.zip chr-efi.vmdk
-          // zip chr-${{matrix.config.version}}.vhd.zip chr-efi.vhd
-          // zip chr-${{matrix.config.version}}.vhdx.zip chr-efi.vhdx
-          // zip chr-${{matrix.config.version}}.vdi.zip chr-efi.vdi
+          # zip chr-${{matrix.config.version}}.vmdk.zip chr-efi.vmdk
+          # zip chr-${{matrix.config.version}}.vhd.zip chr-efi.vhd
+          # zip chr-${{matrix.config.version}}.vhdx.zip chr-efi.vhdx
+          # zip chr-${{matrix.config.version}}.vdi.zip chr-efi.vdi
           zip chr-${{matrix.config.version}}.img.zip chr-efi.img
           ls -l ./
 
