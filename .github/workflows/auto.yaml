@@ -1,9 +1,13 @@
 name: Streamlined Build
 
 on:
-  workflow_dispatch:
+  workflow_dispatch:           # 手动触发开关
   schedule:
-    - cron: "0 0 * * *"
+    - cron: '32 0 * * *' 
+      timezone: Asia/Shanghai   # 2026 年新特性：直接指定北京时间
+  push:
+    branches:
+      - main
 
 permissions: write-all
 
